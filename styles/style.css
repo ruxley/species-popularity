@@ -22,6 +22,10 @@ html, body {
   shape-rendering: crispEdges;
 }
 
-.x.axis path {
+.y.axis path {
+  display: none;
+}
+
+.y.axis line {
   display: none;
 }

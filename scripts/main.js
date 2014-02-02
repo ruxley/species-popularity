@@ -122,27 +122,27 @@
   };
 
 
-  var margin = {top: 20, right: 20, bottom: 95, left: 40},
-      width = 1600 - margin.left - margin.right,
-      height = 800 - margin.top - margin.bottom;
+  var margin = {top: 22, right: 0, bottom: 0, left: 100};
+  var width = 850 - margin.left - margin.right;
+  var height = 1600 - margin.top - margin.bottom;
 
-  var x0 = d3.scale.ordinal()
-      .rangeRoundBands([0, width], .1);
+  var x = d3.scale.linear()
+      .range([0, width]);
 
-  var x1 = d3.scale.ordinal();
+  var y0 = d3.scale.ordinal()
+      .rangeRoundBands([0, height], .2);
 
-  var y = d3.scale.linear()
-      .range([height, 0]);
+  var y1 = d3.scale.ordinal();
 
   var color = d3.scale.ordinal()
-      .range(['#98abc5', '#8a89a6', '#7b6888', '#6b486b', '#a05d56', '#d0743c', '#ff8c00']);
+      .range(['#98abc5', '#8a89a6']);
 
   var xAxis = d3.svg.axis()
-      .scale(x0)
-      .orient('bottom');
+      .scale(x)
+      .orient('top');
 
   var yAxis = d3.svg.axis()
-      .scale(y)
+      .scale(y0)
       .orient('left');
 
   var svg = d3.select('body').append('svg')
@@ -174,51 +174,39 @@
       };
     });
 
-    x0.domain(data.map(function(d) { return d.speciesName; }));
 
-    x1.domain(['baseline', 'filtered']).rangeRoundBands([0, x0.rangeBand()]);
-
-    y.domain([0, d3.max(data, function(d) {
+    x.domain([0, d3.max(data, function(d) {
       return d3.max(d.totals, function(d) { return d.value; });
     })]);
 
+    y0.domain(data.map(function(d) { return d.speciesName; }));
+
+    y1.domain(['baseline', 'filtered']).rangeRoundBands([0, y0.rangeBand()]);
+
+
     svg.append('g')
         .attr('class', 'x axis')
-        .attr('transform', 'translate(0,' + height + ')')
         .call(xAxis);
 
     svg.append('g')
         .attr('class', 'y axis')
-        .call(yAxis)
-      .append('text')
-        .attr('transform', 'rotate(-90)')
-        .attr('y', 6)
-        .attr('dy', '.71em')
-        .style('text-anchor', 'end')
-        .text('Number');
+        .call(yAxis);
 
     var species = svg.selectAll('.species')
         .data(data)
       .enter().append('g')
         .attr('class', 'g')
-        .attr('transform', function(d) { return 'translate(' + x0(d.speciesName) + ',0)'; });
+        .attr('transform', function(d) { return 'translate(0,' + y0(d.speciesName) + ')'; });
 
     species.selectAll('rect')
         .data(function(d) { return d.totals; })
       .enter().append('rect')
-        .attr('width', x1.rangeBand())
-        .attr('x', function(d) { return x1(d.name); })
-        .attr('y', function(d) { return y(d.value); })
-        .attr('height', function(d) { return height - y(d.value); })
+        .attr('x', 0)
+        .attr('y', function(d) { return y1(d.name); })
+        .attr('width', function(d) { return x(d.value); })
+        .attr('height', y1.rangeBand())
         .style('fill', function(d) { return color(d.name); });
 
-    svg.selectAll('.x.axis text') // select all the text elements for the xaxis
-        .style('text-anchor', 'end')
-        .attr('y', '-4')
-        .attr('x', '-8')
-        .attr('transform', function(d) {
-            return 'rotate(-90)';
-        });
   });
 
 })();
