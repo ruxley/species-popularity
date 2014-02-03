@@ -20,7 +20,7 @@
 
   */
 
-  var speciesList = {
+  var animalList = {
     'animal_wolf': 'Wolf',
     'animal_redfox': 'Red fox',
     'animal_greyfox': 'Grey fox',
@@ -110,17 +110,6 @@
   ];
 
 
-  var getTotalByCodes = function(data, filter) {
-    var total = _.reduce(data, function(memo, val, key) {
-      if (key === 'species' || key === 'total') return memo;
-      if (key.match(filter)) {
-        memo += val;
-      }
-      return memo;
-    }, 0);
-    return total;
-  };
-
 
   var margin = {top: 22, right: 0, bottom: 0, left: 100};
   var width = 850 - margin.left - margin.right;
@@ -152,36 +141,86 @@
       .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
   
 
-  d3.csv('data/speciesdata.csv', function(speciesData) {
+  d3.json('data/speciesdata.json', function(err, data) {
 
-    // Convert strings to numbers
-    speciesData.forEach(function(species) {
-      _.forEach(species, function(val, key) {
-        if (key !== 'species') {
-          species[key] = +val;
-        }
-      });
+    // 58 animals
+    // 108 categories
+
+    /* structuredData looks like this
+        [
+          {
+            animalName: 'Kistune',
+            totals: [
+              { name: 'baseline', value: 1234 },
+              { name: 'query', value: 345 }
+            ]
+          }
+        ]
+    */
+
+    // 000 contains the data for ALL categories, so will double the totals if it's left in
+    delete data['000'];
+
+
+    _.mixin({
+      sum: function(obj, key, memo) {
+        return _.reduce(obj, function(mem, val) {
+          return mem + (val[key] || 0);
+        }, memo || 0);
+      }
     });
 
-    // Create data set for d3
-    var data = speciesData.map(function(species) {
-      return {
-        speciesName: speciesList[species.species],
+    var baselineFilter = 'a..';
+
+    var baselineData = _.filter(data, function(val, key) {
+      return key.match(baselineFilter);
+    });
+
+    var baselineCount = _.sum(baselineData, 'count');
+
+    console.log("baselineCount:", baselineCount);
+    console.log("baselineData:", baselineData);
+
+
+    var baselineFilter = 'b..';
+
+    var queryData = _.filter(data, function(val, key) {
+      return key.match(baselineFilter);
+    });
+
+    var queryCount = _.sum(queryData, 'count');
+
+    console.log("queryCount:", queryCount);
+    console.log("queryData:", queryData);
+
+
+    var structuredData = _.map(animalList, function(animalName, animalKey) {
+      var d = {
+        animalName: animalList[animalKey],
         totals: [
-          {name: 'baseline', value: getTotalByCodes(species, 'a..')},
-          {name: 'filtered', value: getTotalByCodes(species, 'b..')}
+          {
+            name: 'baseline',
+            value: _.sum(baselineData, animalKey) / baselineCount
+          },
+          {
+            name: 'query',
+            value: _.sum(queryData, animalKey) / queryCount
+          }
         ]
       };
+      return d;
     });
 
+    console.log("structuredData:", structuredData);
 
-    x.domain([0, d3.max(data, function(d) {
+
+    x.domain([0, d3.max(structuredData, function(d) {
       return d3.max(d.totals, function(d) { return d.value; });
     })]);
 
-    y0.domain(data.map(function(d) { return d.speciesName; }));
+    y0.domain(structuredData.map(function(d) { return d.animalName; }));
 
-    y1.domain(['baseline', 'filtered']).rangeRoundBands([0, y0.rangeBand()]);
+    y1.domain(['baseline', 'query']).rangeRoundBands([0, y0.rangeBand()]);
 
 
     svg.append('g')
@@ -192,13 +231,13 @@
         .attr('class', 'y axis')
         .call(yAxis);
 
-    var species = svg.selectAll('.species')
-        .data(data)
+    var animals = svg.selectAll('.animals')
+        .data(structuredData)
       .enter().append('g')
         .attr('class', 'g')
-        .attr('transform', function(d) { return 'translate(0,' + y0(d.speciesName) + ')'; });
+        .attr('transform', function(d) { return 'translate(0,' + y0(d.animalName) + ')'; });
 
-    species.selectAll('rect')
+    animals.selectAll('rect')
         .data(function(d) { return d.totals; })
       .enter().append('rect')
         .attr('x', 0)
