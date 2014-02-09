@@ -110,6 +110,57 @@
   ];
 
 
+  _.mixin({
+    sum: function(obj, key, memo) {
+      return _.reduce(obj, function(mem, val) {
+        return mem + (val[key] || 0);
+      }, memo || 0);
+    }
+  });
+
+
+  function getStructuredData(data, baselineFilter, queryFilter) {
+
+    var baselineData = _.filter(data, function(val, key) {
+      return key.match(baselineFilter);
+    });
+
+    var baselineCount = _.sum(baselineData, 'count');
+
+    // console.log("baselineCount:", baselineCount);
+    // console.log("baselineData:", baselineData);
+
+
+    var queryData = _.filter(data, function(val, key) {
+      return key.match(queryFilter);
+    });
+
+    var queryCount = _.sum(queryData, 'count');
+
+    // console.log("queryCount:", queryCount);
+    // console.log("queryData:", queryData);
+
+
+    var structuredData = _.map(animalList, function(animalName, animalKey) {
+      var d = {
+        animalName: animalList[animalKey],
+        totals: [
+          {
+            name: 'baseline',
+            value: _.sum(baselineData, animalKey)// / baselineCount
+          },
+          {
+            name: 'query',
+            value: _.sum(queryData, animalKey)// / queryCount
+          }
+        ]
+      };
+      return d;
+    });
+
+    return structuredData;
+  }
+
 
   var margin = {top: 22, right: 0, bottom: 0, left: 100};
   var width = 850 - margin.left - margin.right;
@@ -139,7 +190,66 @@
       .attr('height', height + margin.top + margin.bottom)
     .append('g')
       .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+
+  var xAxisSVG = svg.append('g')
+      .attr('class', 'x axis');
+
+  var yAxisSVG = svg.append('g')
+      .attr('class', 'y axis');
   
+
+  function update(data) {
+    console.log('update data:', data);
+
+    x.domain([0, d3.max(data, function(d) {
+      return d3.max(d.totals, function(d) { return d.value; });
+    })]);
+
+    y0.domain(data.map(function(d) { return d.animalName; }));
+
+    y1.domain(['baseline', 'query']).rangeRoundBands([0, y0.rangeBand()]);
+
+    xAxisSVG.transition().duration(750).call(xAxis);
+
+    yAxisSVG.call(yAxis);
+
+    // DATA JOIN
+    var animals = svg.selectAll('.animal')
+        .data(data, function(d) { return d.animalName; });
+
+    // UPDATE
+    animals
+        .attr('transform', function(d) { return 'translate(0,' + y0(d.animalName) + ')'; });
+
+    // ENTER
+    animals.enter().append('g')
+        .attr('class', 'animal')
+        .attr('transform', function(d) { return 'translate(0,' + y0(d.animalName) + ')'; });
+
+    // EXIT
+    animals.exit().remove();
+
+    // DATA JOIN
+    var bars = animals.selectAll('rect')
+        .data(function(d) { return d.totals; }, function(d) { return d.name; });
+
+    // UPDATE
+    bars
+        .transition()
+        .duration(750)
+          .attr('width', function(d) { return x(d.value); });
+
+    // ENTER
+    bars.enter().append('rect')
+        .attr('x', 0)
+        .attr('y', function(d) { return y1(d.name); })
+        .attr('width', function(d) { return x(d.value); })
+        .attr('height', y1.rangeBand())
+        .style('fill', function(d) { return color(d.name); });
+
+    // EXIT
+    bars.exit().remove();
+  }
 
   d3.json('data/speciesdata.json', function(err, data) {
 
@@ -162,89 +272,16 @@
     delete data['000'];
 
 
-    _.mixin({
-      sum: function(obj, key, memo) {
-        return _.reduce(obj, function(mem, val) {
-          return mem + (val[key] || 0);
-        }, memo || 0);
-      }
+    update(getStructuredData(data, '...', 'b..'));
+
+    d3.select('.updateButton1').on('click', function() {
+      update(getStructuredData(data, '..0', '..6'));
     });
 
-    var baselineFilter = 'a..';
-
-    var baselineData = _.filter(data, function(val, key) {
-      return key.match(baselineFilter);
+    d3.select('.updateButton2').on('click', function() {
+      update(getStructuredData(data, 'a..', 'b..'));
     });
 
-    var baselineCount = _.sum(baselineData, 'count');
-
-    console.log("baselineCount:", baselineCount);
-    console.log("baselineData:", baselineData);
-
-
-    var baselineFilter = 'b..';
-
-    var queryData = _.filter(data, function(val, key) {
-      return key.match(baselineFilter);
-    });
-
-    var queryCount = _.sum(queryData, 'count');
-
-    console.log("queryCount:", queryCount);
-    console.log("queryData:", queryData);
-
-
-    var structuredData = _.map(animalList, function(animalName, animalKey) {
-      var d = {
-        animalName: animalList[animalKey],
-        totals: [
-          {
-            name: 'baseline',
-            value: _.sum(baselineData, animalKey) / baselineCount
-          },
-          {
-            name: 'query',
-            value: _.sum(queryData, animalKey) / queryCount
-          }
-        ]
-      };
-      return d;
-    });
-
-    console.log("structuredData:", structuredData);
-
-
-    x.domain([0, d3.max(structuredData, function(d) {
-      return d3.max(d.totals, function(d) { return d.value; });
-    })]);
-
-    y0.domain(structuredData.map(function(d) { return d.animalName; }));
-
-    y1.domain(['baseline', 'query']).rangeRoundBands([0, y0.rangeBand()]);
-
-
-    svg.append('g')
-        .attr('class', 'x axis')
-        .call(xAxis);
-
-    svg.append('g')
-        .attr('class', 'y axis')
-        .call(yAxis);
-
-    var animals = svg.selectAll('.animals')
-        .data(structuredData)
-      .enter().append('g')
-        .attr('class', 'g')
-        .attr('transform', function(d) { return 'translate(0,' + y0(d.animalName) + ')'; });
-
-    animals.selectAll('rect')
-        .data(function(d) { return d.totals; })
-      .enter().append('rect')
-        .attr('x', 0)
-        .attr('y', function(d) { return y1(d.name); })
-        .attr('width', function(d) { return x(d.value); })
-        .attr('height', y1.rangeBand())
-        .style('fill', function(d) { return color(d.name); });
 
   });
 
