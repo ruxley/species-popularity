@@ -6,8 +6,54 @@
     <link rel="stylesheet" href="styles/style.css">
   </head>
   <body>
-    <button class="updateButton1">UPDATE 1</button>
-    <button class="updateButton2">UPDATE 2</button>
+    <div style="background: #98abc5">
+      <span>Baseline = </span>
+      <span>Sex</span>
+      <select id="baseline-sex-options">
+        <option value=".">All</option>
+        <option value="a">Male</option>
+        <option value="b">Female</option>
+        <option value="c">Other</option>
+      </select>
+      <span>Gender</span>
+      <select id="baseline-gender-options">
+        <option value=".">All</option>
+        <option value="[a]">Male</option>
+        <option value="[e]">Female</option>
+        <option value="[bcdf]">Other</option>
+      </select>
+      <span>Orientation</span>
+      <select id="baseline-orientation-options">
+        <option value=".">All</option>
+        <option value="[01]">Heterosexual</option>
+        <option value="[234]">Bisexual</option>
+        <option value="[56]">Homosexual</option>
+      </select>
+    </div>
+    <div style="background: #8a89a6">
+      <span>Query = </span>
+      <span>Sex</span>
+      <select id="query-sex-options">
+        <option value=".">All</option>
+        <option value="a">Male</option>
+        <option value="b">Female</option>
+        <option value="c">Other</option>
+      </select>
+      <span>Gender</span>
+      <select id="query-gender-options">
+        <option value=".">All</option>
+        <option value="[a]">Male</option>
+        <option value="[e]">Female</option>
+        <option value="[bcdf]">Other</option>
+      </select>
+      <span>Orientation</span>
+      <select id="query-orientation-options">
+        <option value=".">All</option>
+        <option value="[01]">Heterosexual</option>
+        <option value="[234]">Bisexual</option>
+        <option value="[56]">Homosexual</option>
+      </select>
+    </div>
     <div id="graph"></div>
     <script src="scripts/underscore-min.js"></script>
     <script src="scripts/d3.v3.min.js"></script>

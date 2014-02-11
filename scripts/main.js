@@ -147,11 +147,11 @@
         totals: [
           {
             name: 'baseline',
-            value: _.sum(baselineData, animalKey)// / baselineCount
+            value: _.sum(baselineData, animalKey) / baselineCount
           },
           {
             name: 'query',
-            value: _.sum(queryData, animalKey)// / queryCount
+            value: _.sum(queryData, animalKey) / queryCount
           }
         ]
       };
@@ -179,7 +179,8 @@
 
   var xAxis = d3.svg.axis()
       .scale(x)
-      .orient('top');
+      .orient('top')
+      .tickFormat(d3.format('%'));
 
   var yAxis = d3.svg.axis()
       .scale(y0)
@@ -198,7 +199,26 @@
       .attr('class', 'y axis');
   
 
-  function update(data) {
+  function update() {
+    var baselineSexFilter = d3.select('#baseline-sex-options').property('value');
+    var baselineGenderFilter = d3.select('#baseline-gender-options').property('value');
+    var baselineOrientationFilter = d3.select('#baseline-orientation-options').property('value');
+    var querySexFilter = d3.select('#query-sex-options').property('value');
+    var queryGenderFilter = d3.select('#query-gender-options').property('value');
+    var queryOrientationFilter = d3.select('#query-orientation-options').property('value');
+
+    var baselineFilter = baselineSexFilter + baselineGenderFilter + baselineOrientationFilter;
+    var queryFilter = querySexFilter + queryGenderFilter + queryOrientationFilter;
+
+    console.log("baselineFilter:", baselineFilter);
+    console.log("queryFilter:", queryFilter);
+
+    var data = getStructuredData(speciesdata, baselineFilter, queryFilter);
+
+    data = data.sort(function(a, b) {
+      return d3.descending(a.totals[0].value, b.totals[0].value);
+    });
+
     console.log('update data:', data);
 
     x.domain([0, d3.max(data, function(d) {
@@ -251,6 +271,8 @@
     bars.exit().remove();
   }
 
+  var speciesdata = null;
+
   d3.json('data/speciesdata.json', function(err, data) {
 
     // 58 animals
@@ -271,17 +293,16 @@
     // 000 contains the data for ALL categories, so will double the totals if it's left in
     delete data['000'];
 
+    speciesdata = data;
 
-    update(getStructuredData(data, '...', 'b..'));
+    update();
 
-    d3.select('.updateButton1').on('click', function() {
-      update(getStructuredData(data, '..0', '..6'));
-    });
-
-    d3.select('.updateButton2').on('click', function() {
-      update(getStructuredData(data, 'a..', 'b..'));
-    });
-
+    d3.select('#baseline-gender-options').on('change', function() { update(); });
+    d3.select('#baseline-sex-options').on('change', function() { update(); });
+    d3.select('#baseline-orientation-options').on('change', function() { update(); });
+    d3.select('#query-gender-options').on('change', function() { update(); });
+    d3.select('#query-sex-options').on('change', function() { update(); });
+    d3.select('#query-orientation-options').on('change', function() { update(); });
 
   });
 
