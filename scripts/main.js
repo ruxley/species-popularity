@@ -20,66 +20,67 @@
 
   */
 
-  var animalList = {
-    'animal_wolf': 'Wolf',
-    'animal_redfox': 'Red fox',
-    'animal_greyfox': 'Grey fox',
-    'animal_arcticfox': 'Arctic fox',
-    'animal_kitsune': 'Kitsune',
-    'animal_otherfox': 'Other fox',
-    'animal_coyote': 'Coyote',
-    'animal_germanshepherd': 'German shepherd',
-    'animal_husky': 'Husky',
-    'animal_collie': 'Collie',
-    'animal_otherdog': 'Other dog',
-    'animal_othercanine': 'Other canine',
-    'animal_tiger': 'Tiger',
-    'animal_lion': 'Lion',
-    'animal_leopard': 'Leopard',
-    'animal_panther': 'Panther',
-    'animal_cheetah': 'Cheetah',
-    'animal_cougar': 'Cougar',
-    'animal_domesticcat': 'Domestic cat',
-    'animal_otherfeline': 'Other feline',
-    'animal_dragon': 'Dragon',
-    'animal_lizard': 'Lizard',
-    'animal_dinosaur': 'Dinosaur',
-    'animal_otherreptile': 'Other reptile',
-    'animal_raccoon': 'Raccoon',
-    'animal_skunk': 'Skunk',
-    'animal_badger': 'Badger',
-    'animal_riverotter': 'River otter',
-    'animal_seaotter': 'Sea otter',
-    'animal_weasel': 'Weasel',
-    'animal_othermustelid': 'Other mustelid',
-    'animal_redpanda': 'Red panda',
-    'animal_othermusteloid': 'Other musteloid',
-    'animal_horse': 'Horse',
-    'animal_deer': 'Deer',
-    'animal_otherungulate': 'Other ungulate',
-    'animal_brownbear': 'Brown bear',
-    'animal_grizzlybear': 'Grizzly bear',
-    'animal_pandabear': 'Panda bear',
-    'animal_polarbear': 'Polar bear',
-    'animal_otherbear': 'Other bear',
-    'animal_mouse': 'Mouse',
-    'animal_rat': 'Rat',
-    'animal_squirrel': 'Squirrel',
-    'animal_raven': 'Raven',
-    'animal_raptor': 'Raptor',
-    'animal_otherbird': 'Other bird',
-    'animal_rabbit': 'Rabbit',
-    'animal_kangaroo': 'Kangaroo',
-    'animal_koala': 'Koala',
-    'animal_othermarsupial': 'Other marsupial',
-    'animal_lemur': 'Lemur',
-    'animal_monkey': 'Monkey',
-    'animal_otherprimate': 'Other primate',
-    'animal_hyaena': 'Hyaena',
-    'animal_bat': 'Bat',
-    'animal_griffin': 'Griffin',
-    'animal_other': 'Other'
-  };
+  var animalList = [
+    {key: 'animal_wolf', name: 'Wolf'},
+    {key: 'animal_redfox', name: 'Red fox'},
+    {key: 'animal_dragon', name: 'Dragon'},
+    {key: 'animal_domesticcat', name: 'Domestic cat'},
+    {key: 'animal_tiger', name: 'Tiger'},
+    {key: 'animal_husky', name: 'Husky'},
+    {key: 'animal_otherdog', name: 'Other dog'},
+    {key: 'animal_otherfeline', name: 'Other feline'},
+    {key: 'animal_otherfox', name: 'Other fox'},
+    {key: 'animal_arcticfox', name: 'Arctic fox'},
+    {key: 'animal_rabbit', name: 'Rabbit'},
+    {key: 'animal_kitsune', name: 'Kitsune'},
+    {key: 'animal_lion', name: 'Lion'},
+    {key: 'animal_othercanine', name: 'Other canine'},
+    {key: 'animal_raccoon', name: 'Raccoon'},
+    {key: 'animal_leopard', name: 'Leopard'},
+    {key: 'animal_greyfox', name: 'Grey fox'},
+    {key: 'animal_coyote', name: 'Coyote'},
+    {key: 'animal_horse', name: 'Horse'},
+    {key: 'animal_riverotter', name: 'River otter'},
+    {key: 'animal_panther', name: 'Panther'},
+    {key: 'animal_cheetah', name: 'Cheetah'},
+    {key: 'animal_hyaena', name: 'Hyaena'},
+    {key: 'animal_bat', name: 'Bat'},
+    {key: 'animal_skunk', name: 'Skunk'},
+    {key: 'animal_raptor', name: 'Raptor'},
+    {key: 'animal_germanshepherd', name: 'German shepherd'},
+    {key: 'animal_griffin', name: 'Griffin'},
+    {key: 'animal_lizard', name: 'Lizard'},
+    {key: 'animal_otherbird', name: 'Other bird'},
+    {key: 'animal_deer', name: 'Deer'},
+    {key: 'animal_squirrel', name: 'Squirrel'},
+    {key: 'animal_raven', name: 'Raven'},
+    {key: 'animal_otherreptile', name: 'Other reptile'},
+    {key: 'animal_cougar', name: 'Cougar'},
+    {key: 'animal_otherungulate', name: 'Other ungulate'},
+    {key: 'animal_kangaroo', name: 'Kangaroo'},
+    {key: 'animal_dinosaur', name: 'Dinosaur'},
+    {key: 'animal_weasel', name: 'Weasel'},
+    {key: 'animal_rat', name: 'Rat'},
+    {key: 'animal_mouse', name: 'Mouse'},
+    {key: 'animal_collie', name: 'Collie'},
+    {key: 'animal_redpanda', name: 'Red panda'},
+    {key: 'animal_pandabear', name: 'Panda bear'},
+    {key: 'animal_seaotter', name: 'Sea otter'},
+    {key: 'animal_othermustelid', name: 'Other mustelid'},
+    {key: 'animal_polarbear', name: 'Polar bear'},
+    {key: 'animal_grizzlybear', name: 'Grizzly bear'},
+    {key: 'animal_brownbear', name: 'Brown bear'},
+    {key: 'animal_other', name: 'Other'},
+    {key: 'animal_otherbear', name: 'Other bear'},
+    {key: 'animal_lemur', name: 'Lemur'},
+    {key: 'animal_othermarsupial', name: 'Other marsupial'},
+    {key: 'animal_badger', name: 'Badger'},
+    {key: 'animal_othermusteloid', name: 'Other musteloid'},
+    {key: 'animal_monkey', name: 'Monkey'},
+    {key: 'animal_otherprimate', name: 'Other primate'},
+    {key: 'animal_koala', name: 'Koala'},
+    
+  ];
 
   var sexList = [
     ['.','All'],
@@ -141,17 +142,17 @@
     // console.log("queryData:", queryData);
 
 
-    var structuredData = _.map(animalList, function(animalName, animalKey) {
+    var structuredData = _.map(animalList, function(animal) {
       var d = {
-        animalName: animalList[animalKey],
+        animalName: animal.name,
         totals: [
           {
             name: 'baseline',
-            value: _.sum(baselineData, animalKey) / baselineCount
+            value: _.sum(baselineData, animal.key) / baselineCount
           },
           {
             name: 'query',
-            value: _.sum(queryData, animalKey) / queryCount
+            value: _.sum(queryData, animal.key) / queryCount
           }
         ]
       };
@@ -214,10 +215,6 @@
     console.log("queryFilter:", queryFilter);
 
     var data = getStructuredData(speciesdata, baselineFilter, queryFilter);
-
-    data = data.sort(function(a, b) {
-      return d3.descending(a.totals[0].value, b.totals[0].value);
-    });
 
     console.log('update data:', data);
 
