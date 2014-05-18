@@ -143,23 +143,33 @@
 
 
     var structuredData = _.map(animalList, function(animal) {
+      var baselineTotal = _.sum(baselineData, animal.key);
+      var queryTotal = _.sum(queryData, animal.key);
       var d = {
         animalName: animal.name,
         totals: [
           {
             name: 'baseline',
-            value: _.sum(baselineData, animal.key) / baselineCount
+            percent: baselineTotal / baselineCount,
+            value: baselineTotal,
+            totalCount: baselineCount
           },
           {
             name: 'query',
-            value: _.sum(queryData, animal.key) / queryCount
+            percent: queryTotal / queryCount,
+            value: queryTotal,
+            totalCount: queryCount
           }
         ]
       };
       return d;
     });
 
-    return structuredData;
+    return {
+      data: structuredData,
+      baselineCount: baselineCount,
+      queryCount: queryCount
+    };
   }
 
 
@@ -176,7 +186,7 @@
   var y1 = d3.scale.ordinal();
 
   var color = d3.scale.ordinal()
-      .range(['#98abc5', '#8a89a6']);
+      .range(['#9280a2', '#98abc5']);
 
   var xAxis = d3.svg.axis()
       .scale(x)
@@ -198,6 +208,18 @@
 
   var yAxisSVG = svg.append('g')
       .attr('class', 'y axis');
+
+  var tip = d3.tip()
+      .attr('class', 'd3-tip')
+      .offset([-10, 0])
+      .html(function(d) {
+        var parentData = d3.select(this.parentNode).datum();
+        var percent = Math.round(d.percent * 10000) / 100;
+        return parentData.animalName + ': ' + percent + '%' +
+               ' (' + d.value + ' of ' + d.totalCount + ' respondents)';
+      });
+
+  svg.call(tip);
   
 
   function update() {
@@ -214,12 +236,17 @@
     console.log("baselineFilter:", baselineFilter);
     console.log("queryFilter:", queryFilter);
 
-    var data = getStructuredData(speciesdata, baselineFilter, queryFilter);
+    var structuredData = getStructuredData(speciesdata, baselineFilter, queryFilter);
+
+    d3.select('.baseline-total-respondents').text(structuredData.baselineCount);
+    d3.select('.query-total-respondents').text(structuredData.queryCount);
+
+    var data = structuredData.data;
 
     console.log('update data:', data);
 
     x.domain([0, d3.max(data, function(d) {
-      return d3.max(d.totals, function(d) { return d.value; });
+      return d3.max(d.totals, function(d) { return d.percent; });
     })]);
 
     y0.domain(data.map(function(d) { return d.animalName; }));
@@ -254,15 +281,18 @@
     bars
         .transition()
         .duration(750)
-          .attr('width', function(d) { return x(d.value); });
+          .attr('width', function(d) { return x(d.percent); });
 
     // ENTER
     bars.enter().append('rect')
+        .attr('class', 'bar')
         .attr('x', 0)
         .attr('y', function(d) { return y1(d.name); })
-        .attr('width', function(d) { return x(d.value); })
+        .attr('width', function(d) { return x(d.percent); })
         .attr('height', y1.rangeBand())
-        .style('fill', function(d) { return color(d.name); });
+        .style('fill', function(d) { return color(d.name); })
+        .on('mouseover', tip.show)
+        .on('mouseout', tip.hide);
 
     // EXIT
     bars.exit().remove();
