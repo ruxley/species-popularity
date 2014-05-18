@@ -3,12 +3,34 @@ html, body {
   font-family: sans-serif;
 }
 
+.filters {
+  padding: 0 20px 20px 100px;
+  width: 750px;
+}
+
+.filter-group {
+  color: #FFF;
+  padding: 4px 8px;
+  margin-top: 20px;
+}
+
+.filter-title {
+  font-size: 18px;
+  margin-bottom: 4px;
+}
+
+.filter-controls {
+  font-size: 13px;
+}
+
+.filter-controls select {
+  margin-right: 10px;
+}
+
 .bar {
-  fill: steelblue;
 }
 
 .bar:hover {
-  fill: brown;
 }
 
 .axis {
