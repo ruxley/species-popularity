@@ -1,25 +1,5 @@
 (function() {
 
-  /*
-
-  MALE: ['a','Completely male'],
-  OTHER: ['b','Predominantly male'],
-  OTHER: ['c','Equal parts male and female'],
-  OTHER: ['d','Predominantly female'],
-  FEMALE: ['e','Completely female'],
-  OTHER: ['f','Other']
-
-
-  MALE: ['0','Completely heterosexual'],
-  MALE: ['1','Mostly heterosexual'],
-  OTHER: ['2','Bisexual leaning heterosexual'],
-  OTHER: ['3','Bisexual'],
-  OTHER: ['4','Bisexual leaning homosexual'],
-  FEMALE: ['5','Mostly homosexual'],
-  FEMALE: ['6','Completely homosexual']
-
-  */
-
   var animalList = [
     {key: 'animal_wolf', name: 'Wolf'},
     {key: 'animal_redfox', name: 'Red fox'},
@@ -78,9 +58,12 @@
     {key: 'animal_othermusteloid', name: 'Other musteloid'},
     {key: 'animal_monkey', name: 'Monkey'},
     {key: 'animal_otherprimate', name: 'Other primate'},
-    {key: 'animal_koala', name: 'Koala'},
-    
+    {key: 'animal_koala', name: 'Koala'}
   ];
+
+
+  // We combine some of the gender and orientations into similar groups, as defined below
+  // This is achieved via the UI (see the <select> options in the html file)
 
   var sexList = [
     ['.','All'],
@@ -91,88 +74,37 @@
 
   var genderList = [
     ['.','All'],
-    ['a','Completely male'],
-    ['b','Predominantly male'],
-    ['c','Equal parts male and female'],
-    ['d','Predominantly female'],
-    ['e','Completely female'],
-    ['f','Other']
+    ['a','Completely male'], // male
+    ['b','Predominantly male'], // other
+    ['c','Equal parts male and female'], // other
+    ['d','Predominantly female'], // other
+    ['e','Completely female'], // female
+    ['f','Other'] // other
   ];
     
   var orientationList = [
     ['.','All'],
-    ['0','Completely heterosexual'],
-    ['1','Mostly heterosexual'],
-    ['2','Bisexual leaning heterosexual'],
-    ['3','Bisexual'],
-    ['4','Bisexual leaning homosexual'],
-    ['5','Mostly homosexual'],
-    ['6','Completely homosexual']
+    ['0','Completely heterosexual'], // heterosexual
+    ['1','Mostly heterosexual'], // heterosexual
+    ['2','Bisexual leaning heterosexual'], // bisexual
+    ['3','Bisexual'], // bisexual
+    ['4','Bisexual leaning homosexual'], // bisexual
+    ['5','Mostly homosexual'], // homosexual
+    ['6','Completely homosexual'] // homosexual
   ];
 
 
   _.mixin({
-    sum: function(obj, key, memo) {
-      return _.reduce(obj, function(mem, val) {
+    // Sums together the values of a specific key in an array of objects
+    sum: function(arr, key, memo) {
+      return _.reduce(arr, function(mem, val) {
         return mem + (val[key] || 0);
       }, memo || 0);
     }
   });
 
 
-  function getStructuredData(data, baselineFilter, queryFilter) {
-
-    var baselineData = _.filter(data, function(val, key) {
-      return key.match(baselineFilter);
-    });
-
-    var baselineCount = _.sum(baselineData, 'count');
-
-    // console.log("baselineCount:", baselineCount);
-    // console.log("baselineData:", baselineData);
-
-
-    var queryData = _.filter(data, function(val, key) {
-      return key.match(queryFilter);
-    });
-
-    var queryCount = _.sum(queryData, 'count');
-
-    // console.log("queryCount:", queryCount);
-    // console.log("queryData:", queryData);
-
-
-    var structuredData = _.map(animalList, function(animal) {
-      var baselineTotal = _.sum(baselineData, animal.key);
-      var queryTotal = _.sum(queryData, animal.key);
-      var d = {
-        animalName: animal.name,
-        totals: [
-          {
-            name: 'baseline',
-            percent: baselineTotal / baselineCount,
-            value: baselineTotal,
-            totalCount: baselineCount
-          },
-          {
-            name: 'query',
-            percent: queryTotal / queryCount,
-            value: queryTotal,
-            totalCount: queryCount
-          }
-        ]
-      };
-      return d;
-    });
-
-    return {
-      data: structuredData,
-      baselineCount: baselineCount,
-      queryCount: queryCount
-    };
-  }
-
-
+  // D3 graph setup stuff
   var margin = {top: 22, right: 0, bottom: 0, left: 100};
   var width = 850 - margin.left - margin.right;
   var height = 1600 - margin.top - margin.bottom;
@@ -209,6 +141,7 @@
   var yAxisSVG = svg.append('g')
       .attr('class', 'y axis');
 
+  // Provided by the d3-tip extension library
   var tip = d3.tip()
       .attr('class', 'd3-tip')
       .offset([-10, 0])
@@ -222,7 +155,11 @@
   svg.call(tip);
   
 
-  function update() {
+  /*
+   * Updates the graph based on the values provided by the dropdowns.
+   * The speciesData argument is the original data loaded from the JSON file.
+   */
+  function update(speciesData) {
     var baselineSexFilter = d3.select('#baseline-sex-options').property('value');
     var baselineGenderFilter = d3.select('#baseline-gender-options').property('value');
     var baselineOrientationFilter = d3.select('#baseline-orientation-options').property('value');
@@ -230,26 +167,61 @@
     var queryGenderFilter = d3.select('#query-gender-options').property('value');
     var queryOrientationFilter = d3.select('#query-orientation-options').property('value');
 
+    // We use regex to filter the original data based on the chosen dropdown options.
+    // For example if the filters are: Female sex, Male gender, Homosexual orientation
+    // then the regex would be: ba[56]
+    // This would match against the data groups 'ba5' and 'ba6'
+    // Where 'All' is chosen we use . which includes all characters, eg: b.[56]
     var baselineFilter = baselineSexFilter + baselineGenderFilter + baselineOrientationFilter;
     var queryFilter = querySexFilter + queryGenderFilter + queryOrientationFilter;
 
-    console.log("baselineFilter:", baselineFilter);
-    console.log("queryFilter:", queryFilter);
+    var baselineData = _.filter(speciesData, function(val, key) {
+      return key.match(baselineFilter);
+    });
 
-    var structuredData = getStructuredData(speciesdata, baselineFilter, queryFilter);
+    var queryData = _.filter(speciesData, function(val, key) {
+      return key.match(queryFilter);
+    });
 
-    d3.select('.baseline-total-respondents').text(structuredData.baselineCount);
-    d3.select('.query-total-respondents').text(structuredData.queryCount);
+    // Add up total number of members in the groups
+    var baselineCount = _.sum(baselineData, 'count');
+    var queryCount = _.sum(queryData, 'count');
 
-    var data = structuredData.data;
+    // Convert the data into a structure that matches how D3 likes to draw the graph
+    var structuredData = _.map(animalList, function(animal) {
+      var baselineTotal = _.sum(baselineData, animal.key);
+      var queryTotal = _.sum(queryData, animal.key);
+      var d = {
+        animalName: animal.name,
+        totals: [
+          {
+            name: 'baseline',
+            percent: baselineTotal / baselineCount,
+            value: baselineTotal,
+            totalCount: baselineCount
+          },
+          {
+            name: 'query',
+            percent: queryTotal / queryCount,
+            value: queryTotal,
+            totalCount: queryCount
+          }
+        ]
+      };
+      return d;
+    });
 
-    console.log('update data:', data);
 
-    x.domain([0, d3.max(data, function(d) {
+    // Update the text fields next to the dropdowns
+    d3.select('.baseline-total-respondents').text(baselineCount);
+    d3.select('.query-total-respondents').text(queryCount);
+
+    // Update scales
+    x.domain([0, d3.max(structuredData, function(d) {
       return d3.max(d.totals, function(d) { return d.percent; });
     })]);
 
-    y0.domain(data.map(function(d) { return d.animalName; }));
+    y0.domain(structuredData.map(function(d) { return d.animalName; }));
 
     y1.domain(['baseline', 'query']).rangeRoundBands([0, y0.rangeBand()]);
 
@@ -257,9 +229,10 @@
 
     yAxisSVG.call(yAxis);
 
-    // DATA JOIN
+
+    // DATA JOIN FOR EACH ANIMAL
     var animals = svg.selectAll('.animal')
-        .data(data, function(d) { return d.animalName; });
+        .data(structuredData, function(d) { return d.animalName; });
 
     // UPDATE
     animals
@@ -273,7 +246,7 @@
     // EXIT
     animals.exit().remove();
 
-    // DATA JOIN
+    // DATA JOIN FOR THE TWO BARS UNDER EACH ANIMAL
     var bars = animals.selectAll('rect')
         .data(function(d) { return d.totals; }, function(d) { return d.name; });
 
@@ -298,39 +271,23 @@
     bars.exit().remove();
   }
 
-  var speciesdata = null;
 
+  /*
+   * Load the species data from the JSON file. This is just a raw database dump.
+   */
   d3.json('data/speciesdata.json', function(err, data) {
-
-    // 58 animals
-    // 108 categories
-
-    /* structuredData looks like this
-        [
-          {
-            animalName: 'Kistune',
-            totals: [
-              { name: 'baseline', value: 1234 },
-              { name: 'query', value: 345 }
-            ]
-          }
-        ]
-    */
-
-    // 000 contains the data for ALL categories, so will double the totals if it's left in
+    // 000 contains the data for ALL categories, so it will unnecessarily double the totals
     delete data['000'];
 
-    speciesdata = data;
+    d3.select('#baseline-gender-options').on('change', function() { update(data); });
+    d3.select('#baseline-sex-options').on('change', function() { update(data); });
+    d3.select('#baseline-orientation-options').on('change', function() { update(data); });
+    d3.select('#query-gender-options').on('change', function() { update(data); });
+    d3.select('#query-sex-options').on('change', function() { update(data); });
+    d3.select('#query-orientation-options').on('change', function() { update(data); });
 
-    update();
-
-    d3.select('#baseline-gender-options').on('change', function() { update(); });
-    d3.select('#baseline-sex-options').on('change', function() { update(); });
-    d3.select('#baseline-orientation-options').on('change', function() { update(); });
-    d3.select('#query-gender-options').on('change', function() { update(); });
-    d3.select('#query-sex-options').on('change', function() { update(); });
-    d3.select('#query-orientation-options').on('change', function() { update(); });
-
+    // Perform an initial update/draw of the graph
+    update(data);
   });
 
 })();
