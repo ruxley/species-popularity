@@ -77,6 +77,6 @@ html, body {
 /* Style northward tooltips differently */
 .d3-tip.n:after {
   margin: -1px 0 0 0;
-  top: 100%;
+  top: 99%;
   left: 0;
 }
