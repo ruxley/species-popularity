@@ -12,4 +12,4 @@ Install project node module dependencies (run from the root of the project folde
 
 Run a local node server at http://localhost:8000
 
-    grunt serve
+    grunt connect
